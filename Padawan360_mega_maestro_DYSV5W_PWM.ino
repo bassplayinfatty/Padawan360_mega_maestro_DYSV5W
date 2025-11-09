@@ -1,5 +1,6 @@
 //Maestro_Mega_DYSV5W
 //by Steve Baudains 2025
+// edits by STeven Sloan to accomodate the Flipsky esc's and brushless hub motors
 //This script allows for an Arduino Mega to control a Pololu Maestro board using hardware serial
 // on Tx3 on a Mega or software serial on Tx11
 // Please credit Dan Kraus for the original hard work on Padawan 360
