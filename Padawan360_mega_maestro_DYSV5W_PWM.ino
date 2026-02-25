@@ -1,6 +1,6 @@
 //Maestro_Mega_DYSV5W
 //by Steve Baudains 2025
-// edits by STeven Sloan to accomodate the Flipsky esc's and brushless hub motors
+// edits by Steven Sloan to accomodate the Flipsky esc's and brushless hub motors
 //This script allows for an Arduino Mega to control a Pololu Maestro board using hardware serial
 // on Tx3 on a Mega or software serial on Tx11
 // Please credit Dan Kraus for the original hard work on Padawan 360
@@ -9,6 +9,12 @@
 // Hub Drive Motors with individual PWM speed controllers
 // This script allows selection between standard Sabertooth control of brushed motors for the foot drives,
 // or the use of individual motor drivers (e.g. Flipsky FSESC6.7) with hub motors.
+
+
+// =======================================================================================
+// NOTE: DO NOT USE SoftwareSerial WITH PWM MOTORS.  SoftwareSerial USES INTERRUPTS WHICH DISRUPT THE PWM SIGNAL.
+// =======================================================================================
+
 
 // =======================================================================================
 // /////////////////////////Padawan360 Body Code - Mega I2C v2.0 ////////////////////////////////////
@@ -50,14 +56,14 @@
 #define FOOT_CONTROLLER 1  //0 = Sabertooth Serial or 1 =individual ESC for PWM (HUB) motors
 // PWM Hub Motor Mode settings...
 #if FOOT_CONTROLLER == 1
-#define leftFootPin 44    //connect this pin to motor controller for left foot (R/C mode)
-#define rightFootPin 45   //connect this pin to motor controller for right foot (R/C mode)
-#define leftDirection 1   //change this if left motor is spinning the wrong way
-#define rightDirection 1  //change this if right motor is spinning the wrong way
-int YDist = 0;            // Initial Drive Stick Value.
-int XDist = 0;            // Initial Drive Stick Value.
-int leftFoot = 90;        // Initial servo signal for motor speed (0 = full reverse, 90 = stop, 180 = full forward)
-int rightFoot = 90;       // Initial servo signal for motor speed (0 = full reverse, 90 = stop, 180 = full forward)
+#define leftFootPin 44         //connect this pin to motor controller for left foot (R/C mode)
+#define rightFootPin 45        //connect this pin to motor controller for right foot (R/C mode)
+#define leftDirection 1        //change this if left motor is spinning the wrong way
+#define rightDirection 1       //change this if right motor is spinning the wrong way
+int YDist = 0;                 // Initial Drive Stick Value.
+int XDist = 0;                 // Initial Drive Stick Value.
+int leftFoot = 90;             // Initial servo signal for motor speed (0 = full reverse, 90 = stop, 180 = full forward)
+int rightFoot = 90;            // Initial servo signal for motor speed (0 = full reverse, 90 = stop, 180 = full forward)
 int CalibrationSpeed = 127;    // To set the speed to maximum for calibration of the hub drive VESCs
 bool CalibrationMode = false;  // set to TRUE when both triggers and both shoulder buttons are pressed
 #endif
@@ -105,7 +111,7 @@ int RampingDeadzoneDelay = 200;   //  milliseconds in the DriveDeadzone before s
 // use the lowest number with no drift
 // DOMEDEADZONERANGE for the left stick, DRIVEDEADZONERANGE for the right stick
 const byte DOMEDEADZONERANGE = 20;
-const byte DRIVEDEADZONERANGE = 20;  // Suggested 4-8 for Sabertooth, 15-25 for PWM Hubs
+const byte DRIVEDEADZONERANGE = 22;  // Suggested 4-8 for Sabertooth, 15-25 for PWM Hubs
 
 // Set the baude rate for the Sabertooth motor controller (feet)
 // 9600 is the default baud rate for Sabertooth packet serial.
@@ -143,10 +149,10 @@ int turnDirection = 20;
 
 #include <PololuMaestro.h>  // added the Maestro libray
 //#include <SoftwareSerial.h>
-SoftwareSerial maestroSerial(10, 11);  //tx pin 11
+// SoftwareSerial maestroSerial(10, 11);  //tx pin 11
 
-//MiniMaestro maestro(Serial3); //hardware serial
-MiniMaestro maestrosserial(maestroSerial);  //software serial
+MiniMaestro maestro(Serial3);  //hardware serial
+//MiniMaestro maestrosserial(maestroSerial);  //software serial
 
 /////////////////////////////////////////////////////////////////
 #if FOOT_CONTROLLER == 0
@@ -215,8 +221,8 @@ void setup() {
   Serial1.begin(SABERTOOTHBAUDRATE);
 #endif
   Serial2.begin(DOMEBAUDRATE);
-  //Serial3.begin(9600); //start serial3 for the body Maestro
-  maestroSerial.begin(9600);
+  Serial3.begin(9600); //start serial3 for the body Maestro
+  // maestroSerial.begin(9600);
 
 #if defined(SYRENSIMPLE)
   Syren10.motor(0);
@@ -445,48 +451,56 @@ void loop() {
 
   if (Xbox.getButtonPress(R2, 0)) {
     if (Xbox.getButtonPress(UP, 0)) {
-      maestrosserial.restartScript(0);
+      // maestrosserial.restartScript(0);
+      maestro.restartScript(0);
     }
   }
 
   if (Xbox.getButtonPress(R2, 0)) {
     if (Xbox.getButtonPress(RIGHT, 0)) {
-      maestrosserial.restartScript(1);
+      // maestrosserial.restartScript(1);
+      maestro.restartScript(1);
     }
   }
   if (Xbox.getButtonPress(R2, 0)) {
     if (Xbox.getButtonPress(DOWN, 0)) {
-      maestrosserial.restartScript(2);
+      // maestrosserial.restartScript(2);
+      maestro.restartScript(2);
     }
   }
 
   if (Xbox.getButtonPress(R2, 0)) {
     if (Xbox.getButtonPress(LEFT, 0)) {
-      maestrosserial.restartScript(3);
+      // maestrosserial.restartScript(3);
+      maestro.restartScript(3);
     }
   }
   if (Xbox.getButtonPress(L2, 0)) {
     if (Xbox.getButtonPress(UP, 0)) {
-      maestrosserial.restartScript(4);
+      // maestrosserial.restartScript(4);
+      maestro.restartScript(4);
       //mp3Trigger.play(1);
     }
   }
   if (Xbox.getButtonPress(L2, 0)) {
     if (Xbox.getButtonPress(RIGHT, 0)) {
-      maestrosserial.restartScript(5);
+      // maestrosserial.restartScript(5);
+      maestro.restartScript(5);
       // mp3Trigger.play(3);
       player.playSpecified(3);
     }
   }
   if (Xbox.getButtonPress(L2, 0)) {
     if (Xbox.getButtonPress(DOWN, 0)) {
-      maestrosserial.restartScript(6);
+      // maestrosserial.restartScript(6);
+      maestro.restartScript(6);
     }
   }
 
   if (Xbox.getButtonPress(L2, 0)) {
     if (Xbox.getButtonPress(LEFT, 0)) {
-      maestrosserial.restartScript(7);
+      // maestrosserial.restartScript(7);
+      maestro.restartScript(7);
     }
   }
 
@@ -726,17 +740,16 @@ void loop() {
     Sabertooth2x.turn(-turnThrottle);
     Sabertooth2x.drive(driveThrottle);
   }
-  #elif FOOT_CONTROLLER == 1
+#elif FOOT_CONTROLLER == 1
   //Experimental Hub Drive Code. Use at your own risk and test operation fully before going out in public.
   throttleStickValueraw = Xbox.getAnalogHat(throttleAxis, 0);
   turnThrottleraw = Xbox.getAnalogHat(turnAxis, 0);
 
   if (isDriveEnabled) {
 
-   if ((Xbox.getButtonPress(L1, 0)) && (Xbox.getButtonPress(L2, 0)) && (Xbox.getButtonPress(R1, 0)) && (Xbox.getButtonPress(R2, 0)) && (drivespeed == DRIVESPEED3)) {
-        CalibrationMode = true;
-      }
-    else {
+    if ((Xbox.getButtonPress(L1, 0)) && (Xbox.getButtonPress(L2, 0)) && (Xbox.getButtonPress(R1, 0)) && (Xbox.getButtonPress(R2, 0)) && (drivespeed == DRIVESPEED3)) {
+      CalibrationMode = true;
+    } else {
       CalibrationMode = false;
     }
 
